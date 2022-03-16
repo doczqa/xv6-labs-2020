@@ -57,7 +57,9 @@ ls(char *path)
     while(read(fd, &de, sizeof(de)) == sizeof(de)){
       if(de.inum == 0)
         continue;
+      // fprintf(2,"de.name:%s\n",de.name);s
       memmove(p, de.name, DIRSIZ);
+      // fprintf(2,"p:%s\n",p);
       p[DIRSIZ] = 0;
       if(stat(buf, &st) < 0){
         printf("ls: cannot stat %s\n", buf);

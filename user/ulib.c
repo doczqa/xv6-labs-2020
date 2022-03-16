@@ -44,7 +44,7 @@ memset(void *dst, int c, uint n)
 }
 
 char*
-strchr(const char *s, char c)
+strchr(const char *s, char c)//找到第一个出现的 c 字符并返回这个字符
 {
   for(; *s; s++)
     if(*s == c)
@@ -53,14 +53,14 @@ strchr(const char *s, char c)
 }
 
 char*
-gets(char *buf, int max)
+gets(char *buf, int max) //读取一行
 {
   int i, cc;
   char c;
 
   for(i=0; i+1 < max; ){
-    cc = read(0, &c, 1);
-    if(cc < 1)
+    cc = read(0, &c, 1);  //read (int __fd, void *__buf, size_t __nbytes)
+    if(cc < 1) // ?
       break;
     buf[i++] = c;
     if(c == '\n' || c == '\r')

@@ -25,13 +25,14 @@ int
 main(int argc, char *argv[])
 {
   int fd, i;
-
+  fprintf(2,"argv:%s\n",argv);
   if(argc <= 1){
     cat(0);
     exit(0);
   }
 
   for(i = 1; i < argc; i++){
+    fprintf(2,"argv:%s\n",argv[i]);
     if((fd = open(argv[i], 0)) < 0){
       fprintf(2, "cat: cannot open %s\n", argv[i]);
       exit(1);
