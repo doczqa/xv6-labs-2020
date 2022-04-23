@@ -110,7 +110,7 @@ sys_fstat(void)
   struct file *f;
   uint64 st; // user pointer to struct stat
 
-  if(argfd(0, 0, &f) < 0 || argaddr(1, &st) < 0)
+  if(argfd(0, 0, &f) < 0 || argaddr(1, &st) < 0) //得到文件结构体和用户空间的stat虚拟地址
     return -1;
   return filestat(f, st);
 }
@@ -356,12 +356,13 @@ sys_mkdir(void)
 {
   char path[MAXPATH];
   struct inode *ip;
-
+  printf("sys_mkdir(void)\n");
   begin_op();
   if(argstr(0, path, MAXPATH) < 0 || (ip = create(path, T_DIR, 0, 0)) == 0){
     end_op();
     return -1;
   }
+  // printf("path:%s\n",path);
   iunlockput(ip);
   end_op();
   return 0;

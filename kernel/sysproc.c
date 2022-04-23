@@ -6,6 +6,7 @@
 #include "memlayout.h"
 #include "spinlock.h"
 #include "proc.h"
+#include "sysinfo.h"
 
 uint64
 sys_exit(void)
@@ -20,6 +21,7 @@ sys_exit(void)
 uint64
 sys_getpid(void)
 {
+  printf("sys_getpid/n");
   return myproc()->pid;
 }
 
@@ -58,7 +60,7 @@ sys_sleep(void)
   int n;
   uint ticks0;
 
-  if(argint(0, &n) < 0)
+  if(argint(0, &n) < 0) //get p->trapframe->a0，a0 是保存的参数。
     return -1;
   acquire(&tickslock);
   ticks0 = ticks;
@@ -71,6 +73,53 @@ sys_sleep(void)
   }
   release(&tickslock);
   return 0;
+}
+
+uint64
+sys_trace(void)
+{
+  long int record[32];
+  record[0] = 1;
+  for(int i=1;i<32;i++) {
+    record[i] = record[i-1]*2;
+  }
+  int n;
+  if(argint(0, &n) < 0) //get p->trapframe->a0，a0 是保存的参数。
+    return -1;
+  // printf("n:%d-------------------\n", n);
+  for(int i=31;i>=0;i--) {
+    if(record[i] <= n) {
+      // printf("record[i]:%d-------------------\n", record[i]);
+      myproc()->mask[i] = 1;
+      n -= record[i];
+    }
+  }
+  // printf("n:%d-------------------\n", n);
+  return 0;
+}
+
+uint64
+sys_sysinfo(void)
+{
+  // printf("there are %d blocks left-------------------\n", getFreeMemory());
+  // printf("there are %d unused proc-------------------\n", getUnusedProc());
+  uint64 blocks = getFreeMemory();
+  uint64 unusedProc = getUnusedProc();
+
+  uint64 res;
+  // printf("res:%d\n",res);
+  struct proc *p = myproc();
+  if(argaddr(0, &res) < 0)
+    return -1;
+  // printf("res:%d\n",res);
+  struct sysinfo temp;
+  temp.freemem = blocks;
+  temp.nproc = unusedProc;
+
+  if(copyout(p->pagetable, res, (char *)&temp, sizeof(temp)) < 0) //p->pagetable 的类型是 uint64 *
+      return -1;
+  // printf("there are %d blocks left----copy---------------\n", res->freemem);
+  return res;
 }
 
 uint64

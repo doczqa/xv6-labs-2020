@@ -104,29 +104,38 @@ extern uint64 sys_unlink(void);
 extern uint64 sys_wait(void);
 extern uint64 sys_write(void);
 extern uint64 sys_uptime(void);
+extern uint64 sys_trace(void);
+extern uint64 sys_sysinfo(void);
 
 static uint64 (*syscalls[])(void) = {
-[SYS_fork]    sys_fork,
-[SYS_exit]    sys_exit,
-[SYS_wait]    sys_wait,
-[SYS_pipe]    sys_pipe,
-[SYS_read]    sys_read,
-[SYS_kill]    sys_kill,
-[SYS_exec]    sys_exec,
-[SYS_fstat]   sys_fstat,
-[SYS_chdir]   sys_chdir,
-[SYS_dup]     sys_dup,
-[SYS_getpid]  sys_getpid,
-[SYS_sbrk]    sys_sbrk,
-[SYS_sleep]   sys_sleep,
-[SYS_uptime]  sys_uptime,
-[SYS_open]    sys_open,
-[SYS_write]   sys_write,
-[SYS_mknod]   sys_mknod,
-[SYS_unlink]  sys_unlink,
-[SYS_link]    sys_link,
-[SYS_mkdir]   sys_mkdir,
-[SYS_close]   sys_close,
+[SYS_fork]    sys_fork,//1
+[SYS_exit]    sys_exit,//2
+[SYS_wait]    sys_wait,//3
+[SYS_pipe]    sys_pipe,//4
+[SYS_read]    sys_read,//5
+[SYS_kill]    sys_kill,//6
+[SYS_exec]    sys_exec,//7
+[SYS_fstat]   sys_fstat,//8
+[SYS_chdir]   sys_chdir,//9
+[SYS_dup]     sys_dup,//10
+[SYS_getpid]  sys_getpid,//11
+[SYS_sbrk]    sys_sbrk,//12
+[SYS_sleep]   sys_sleep,//13
+[SYS_uptime]  sys_uptime,//14
+[SYS_open]    sys_open,//15
+[SYS_write]   sys_write,//16
+[SYS_mknod]   sys_mknod,//17
+[SYS_unlink]  sys_unlink,//18
+[SYS_link]    sys_link,//19
+[SYS_mkdir]   sys_mkdir,//20
+[SYS_close]   sys_close,//21
+[SYS_trace]   sys_trace,//22
+[SYS_sysinfo]   sys_sysinfo,//23
+};
+
+static char names[32][10] = {{""},{"fork"},{"exit"},{"wait"},{"pipe"},{"read"},{"kill"},
+{"exec"},{"fstat"},{"chdir"},{"dup"},{"getpid"},
+{"sbrk"},{"sleep"},{"uptime"},{"open"},{"write"},{"mknod"},{"unlink"},{"link"},{"mkdir"},{"close"},{"trace"},{"sysinfo"}
 };
 
 void
@@ -134,10 +143,16 @@ syscall(void)
 {
   int num;
   struct proc *p = myproc();
-
+  // printf("syscall(void)\n");
   num = p->trapframe->a7;
+  // printf("p->trapframe->a7:%d\n",num);
   if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
-    p->trapframe->a0 = syscalls[num]();
+    // printf("p->trapframe->a7:%d\n",num);
+    p->trapframe->a0 = syscalls[num](); //syscalls 存储着各个系统调用的函数指针，a0 存储着返回结果？
+    if(p->mask[num] == 1) {
+      printf("%d: syscall %s -> %d\n",p->pid, names[num], p->trapframe->a0);
+    }
+    // printf("p->trapframe->a0:%d\n",p->trapframe->a0);
   } else {
     printf("%d %s: unknown sys call %d\n",
             p->pid, p->name, num);
